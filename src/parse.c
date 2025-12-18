@@ -10,7 +10,7 @@
 #include "common.h"
 #include "parse.h"
 
-int create_db_header(int fd, struct dbheader_t **headerOut) {
+int create_db_header(struct dbheader_t **headerOut) {
 	struct dbheader_t *header = malloc(sizeof(struct dbheader_t));
 	if (header == NULL) {
 		printf("Malloc failed to create db header");
@@ -23,8 +23,6 @@ int create_db_header(int fd, struct dbheader_t **headerOut) {
 	header->filesize = sizeof(struct dbheader_t);
 
 	*headerOut = header;
-
-	output_file(fd, header);
 
 	return STATUS_SUCCESS;
 }
@@ -70,7 +68,11 @@ int validate_db_header(int fd, struct dbheader_t **headerOut) {
 	return STATUS_SUCCESS;
 }
 
-void output_file(int fd, struct dbheader_t *dbheader) {
+int output_file(int fd, struct dbheader_t *dbheader,
+				struct employee_t *employees) {
+	if (employees != NULL) {
+		return STATUS_ERROR;
+	}
 	dbheader->magic = htonl(dbheader->magic);
 	dbheader->filesize = htonl(dbheader->filesize);
 	dbheader->count = htons(dbheader->count);
@@ -78,4 +80,5 @@ void output_file(int fd, struct dbheader_t *dbheader) {
 
 	lseek(fd, 0, SEEK_SET);
 	write(fd, dbheader, sizeof(struct dbheader_t));
+	return STATUS_SUCCESS;
 }
